@@ -1,0 +1,52 @@
+# Single-instance PostgreSQL. Swap for your managed/HA Postgres by pointing DATABASE_URL at it
+# and removing this file from kustomization.yaml.
+apiVersion: v1
+kind: Service
+metadata:
+  name: fpl-postgres
+spec:
+  selector: { app.kubernetes.io/name: fpl-postgres }
+  ports: [{ name: pg, port: 5432, targetPort: 5432 }]
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: fpl-postgres
+spec:
+  serviceName: fpl-postgres
+  replicas: 1
+  selector:
+    matchLabels: { app.kubernetes.io/name: fpl-postgres }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: fpl-postgres }
+    spec:
+      securityContext: { fsGroup: 70, runAsUser: 70, runAsNonRoot: true, seccompProfile: { type: RuntimeDefault } }
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports: [{ containerPort: 5432, name: pg }]
+          env:
+            - { name: POSTGRES_USER, value: fpl }
+            - { name: POSTGRES_DB, value: fpl }
+            - { name: PGDATA, value: /var/lib/postgresql/data/pgdata }
+            - name: POSTGRES_PASSWORD
+              valueFrom: { secretKeyRef: { name: fpl-db, key: POSTGRES_PASSWORD } }
+          readinessProbe:
+            exec: { command: ["pg_isready", "-U", "fpl", "-d", "fpl"] }
+            periodSeconds: 10
+          livenessProbe:
+            exec: { command: ["pg_isready", "-U", "fpl", "-d", "fpl"] }
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          resources:
+            requests: { cpu: 100m, memory: 256Mi }
+            limits: { memory: 1Gi }
+          securityContext: { allowPrivilegeEscalation: false, capabilities: { drop: ["ALL"] } }
+          volumeMounts: [{ name: data, mountPath: /var/lib/postgresql/data }]
+  volumeClaimTemplates:
+    - metadata: { name: data }
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        # storageClassName: <your-class>
+        resources: { requests: { storage: 10Gi } }

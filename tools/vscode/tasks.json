@@ -1,0 +1,49 @@
+{
+  "version": "2.0.0",
+  // Tasks run through cmd.exe with the project's portable Node first on PATH.
+  "windows": {
+    "options": {
+      "shell": { "executable": "cmd.exe", "args": ["/d", "/c"] },
+      "env": { "PATH": "${workspaceFolder}\\.venv\\node;${env:PATH}" }
+    }
+  },
+  "tasks": [
+    {
+      "label": "Setup environment",
+      "detail": "Portable Node in .venv, npm packages, .env, local database",
+      "type": "shell",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\setup.ps1",
+      "problemMatcher": []
+    },
+    {
+      "label": "Dev: start all (DB + API + Web)",
+      "detail": "Local PostgreSQL :54329, API :8080, UI http://localhost:5173 (hot reload)",
+      "type": "shell",
+      "command": "npm run dev",
+      "isBackground": true,
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": {
+        "owner": "fpl-dev",
+        "pattern": { "regexp": "^\\[(?:api|core)\\].*error TS\\d+: (.*)$", "message": 1 },
+        "background": { "activeBegins": true, "beginsPattern": "db:local", "endsPattern": "Server listening at" }
+      }
+    },
+    {
+      "label": "Dev: DB + Web (debug API separately)",
+      "detail": "Everything except the API, for the 'Debug API' launch configuration",
+      "type": "shell",
+      "command": "npm run dev:noapi",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "fpl-dev",
+        "pattern": { "regexp": "^\\[core\\].*error TS\\d+: (.*)$", "message": 1 },
+        "background": { "activeBegins": true, "beginsPattern": "db:local", "endsPattern": "Local PostgreSQL ready|already running" }
+      }
+    },
+    { "label": "DB: stop local database", "type": "shell", "command": "npm run db:local -- stop", "problemMatcher": [] },
+    { "label": "DB: reset local database (deletes data)", "type": "shell", "command": "npm run db:local -- reset", "problemMatcher": [] },
+    { "label": "Test: core unit tests", "type": "shell", "command": "npm test", "group": "test", "problemMatcher": [] },
+    { "label": "Typecheck all packages", "type": "shell", "command": "npm run typecheck", "problemMatcher": "$tsc" },
+    { "label": "Build production", "type": "shell", "command": "npm run build", "problemMatcher": "$tsc" }
+  ]
+}

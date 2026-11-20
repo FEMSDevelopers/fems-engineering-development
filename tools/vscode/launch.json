@@ -1,0 +1,58 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Open UI in Edge (starts DB + API + Web)",
+      "type": "msedge",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/packages/web",
+      "preLaunchTask": "Dev: start all (DB + API + Web)"
+    },
+    {
+      "name": "Open UI in Chrome (starts DB + API + Web)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/packages/web",
+      "preLaunchTask": "Dev: start all (DB + API + Web)"
+    },
+    {
+      "name": "Open UI in Edge (servers already running)",
+      "type": "msedge",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/packages/web"
+    },
+    {
+      "name": "Debug API (breakpoints in packages/server)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "${workspaceFolder}/.venv/node/node.exe",
+      "runtimeArgs": ["--env-file-if-exists=${workspaceFolder}/.env", "--import", "tsx"],
+      "program": "${workspaceFolder}/packages/server/src/index.ts",
+      "cwd": "${workspaceFolder}/packages/server",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+      "preLaunchTask": "Dev: DB + Web (debug API separately)"
+    },
+    {
+      "name": "Debug core unit tests",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "${workspaceFolder}/.venv/node/node.exe",
+      "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
+      "args": ["run"],
+      "cwd": "${workspaceFolder}/packages/core",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"]
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug API + open UI in Edge",
+      "configurations": ["Debug API (breakpoints in packages/server)", "Open UI in Edge (servers already running)"],
+      "stopAll": true
+    }
+  ]
+}

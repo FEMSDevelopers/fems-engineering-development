@@ -1,0 +1,16 @@
+{
+  // Terminals open with the project environment active (.venv\node on PATH, "(fpl)" prompt).
+  "terminal.integrated.profiles.windows": {
+    "PowerShell (fpl)": {
+      "source": "PowerShell",
+      "args": ["-NoLogo", "-NoExit", "-ExecutionPolicy", "Bypass", "-Command", ". '${workspaceFolder}\\scripts\\activate.ps1'"]
+    }
+  },
+  "terminal.integrated.defaultProfile.windows": "PowerShell (fpl)",
+  "terminal.integrated.env.windows": { "PATH": "${workspaceFolder}\\.venv\\node;${env:PATH}" },
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "files.eol": "\n",
+  "search.exclude": { "**/.venv": true, "**/dist": true, "**/node_modules": true },
+  "files.watcherExclude": { "**/.venv/**": true, "**/node_modules/**": true, "**/dist/**": true }
+}
